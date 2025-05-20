@@ -5,13 +5,13 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Assignment2.App
+namespace Assignment2.App.Views
 {
-    public partial class SearchForAnimalWindow : Window
+    public partial class SearchForAnimalView : Window
     {
         private readonly AnimalService animalService;
 
-        public SearchForAnimalWindow(AnimalService animalService)
+        public SearchForAnimalView(AnimalService animalService)
         {
             InitializeComponent();
             this.animalService = animalService;
@@ -30,7 +30,7 @@ namespace Assignment2.App
         }
 
         public static readonly DependencyProperty SelectedCustomerProperty =
-            DependencyProperty.Register("SelectedCustomer", typeof(Customer), typeof(SearchForAnimalWindow), new PropertyMetadata(null));
+            DependencyProperty.Register("SelectedCustomer", typeof(Customer), typeof(SearchForAnimalView), new PropertyMetadata(null));
 
         private void LoadAnimalsForCustomer()
         {

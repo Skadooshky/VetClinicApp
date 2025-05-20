@@ -32,7 +32,7 @@ namespace Assignment2.App.ViewModels
             // Edit existing customer
             EditCustomerCommand = new RelayCommand(() =>
             {
-                var customerSearch = new SearchForCustomerWindow(customerService)
+                var customerSearch = new SearchForCustomerView(customerService)
                 {
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
@@ -54,14 +54,14 @@ namespace Assignment2.App.ViewModels
             // Edit existing animal
             EditAnimalCommand = new RelayCommand(() =>
             {
-                var customerSearch = new SearchForCustomerWindow(customerService)
+                var customerSearch = new SearchForCustomerView(customerService)
                 {
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
 
                 if (customerSearch.ShowDialog() != true) return;
 
-                var animalSearch = new SearchForAnimalWindow(animalService)
+                var animalSearch = new SearchForAnimalView(animalService)
                 {
                     SelectedCustomer = customerSearch.Customer,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -69,7 +69,7 @@ namespace Assignment2.App.ViewModels
 
                 if (animalSearch.ShowDialog() == true)
                 {
-                    var view = new AnimalEditorView(animalService, customerService, animalSearch.Animal);
+                    var view = new AnimalEditorView(animalService, customerService, customerSearch.Customer, animalSearch.Animal);
                     view.ShowDialog();
                 }
             });

@@ -7,10 +7,10 @@ namespace Assignment2.App.Views
 {
     public partial class AnimalEditorView : Window
     {
-        public AnimalEditorView(AnimalService animalService, CustomerService customerService, Animal? existingAnimal = null)
+        public AnimalEditorView(AnimalService animalService, CustomerService customerService, Customer? selectedCustomer = null, Animal? existingAnimal = null)
         {
             InitializeComponent();
-            var vm = new AnimalViewModel(animalService, customerService, existingAnimal);
+            var vm = new AnimalViewModel(animalService, customerService, selectedCustomer, existingAnimal);
             vm.CloseRequested += () => Close();
             DataContext = vm;
         }

@@ -33,9 +33,13 @@ namespace Assignment2.App.BusinessLayer
         public void Add(Customer customer)
         {
             var customers = GetAll();
+
+            customer.Id = customers.Any() ? customers.Max(c => c.Id) + 1 : 1;
+
             customers.Add(customer);
             WriteAll(customers);
         }
+
 
         public void Update(Customer customer)
         {

@@ -13,14 +13,16 @@ namespace Assignment2.App.ViewModels
     public class CustomerViewModel : INotifyPropertyChanged
     {
         private readonly CustomerService customerService;
-        private readonly Customer? existingCustomer;
+        private readonly Customer? originalCustomer;
 
         public ObservableCollection<Customer> Customers { get; set; }
 
+        public int Id => originalCustomer?.Id ?? 0;
         private string firstName = string.Empty;
         private string surname = string.Empty;
         private string phoneNumber = string.Empty;
         private string address = string.Empty;
+        private Customer? selectedCustomer;
 
         public string FirstName
         {
@@ -46,36 +48,53 @@ namespace Assignment2.App.ViewModels
             set { address = value; OnPropertyChanged(); }
         }
 
+        public Customer? SelectedCustomer
+        {
+            get => selectedCustomer;
+            set
+            {
+                selectedCustomer = value;
+                if (value != null)
+                {
+                    FirstName = value.FirstName ?? string.Empty;
+                    Surname = value.Surname ?? string.Empty;
+                    PhoneNumber = value.PhoneNumber ?? string.Empty;
+                    Address = value.Address ?? string.Empty;
+                }
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsEditing => originalCustomer != null && originalCustomer.Id != 0;
+
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
-
+        public ICommand DeleteCommand { get; }
         public event Action? CloseRequested;
 
         public CustomerViewModel(CustomerService service, Customer? customer = null)
         {
             customerService = service;
-            existingCustomer = customer;
+            originalCustomer = customer;
 
             Customers = new ObservableCollection<Customer>(customerService.GetAllCustomers());
 
-            // If editing existing customer, populate fields
             if (customer != null)
             {
-                FirstName = customer.FirstName;
-                Surname = customer.Surname;
-                PhoneNumber = customer.PhoneNumber;
-                Address = customer.Address;
+                SelectedCustomer = customer;
             }
 
             SaveCommand = new RelayCommand(SaveCustomer);
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke());
+            DeleteCommand = new RelayCommand(DeleteCustomer, () => SelectedCustomer != null);
+            OnPropertyChanged(nameof(IsEditing));
         }
 
         private void SaveCustomer()
         {
             var newCustomer = new Customer
             {
-                Id = existingCustomer?.Id ?? 0,
+                Id = originalCustomer?.Id ?? 0,
                 FirstName = FirstName,
                 Surname = Surname,
                 PhoneNumber = PhoneNumber,
@@ -84,31 +103,33 @@ namespace Assignment2.App.ViewModels
 
             if (!newCustomer.CheckIfValid())
             {
-                MessageBox.Show("Cannot save customer - missing information.", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Missing required customer information.", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            if (existingCustomer == null)
-            {
+            if (originalCustomer == null)
                 customerService.AddCustomer(newCustomer);
-                Customers.Add(newCustomer);
-            }
             else
-            {
                 customerService.UpdateCustomer(newCustomer);
 
-                // Optional: update list item in UI
-                var existing = Customers.FirstOrDefault(c => c.Id == newCustomer.Id);
-                if (existing != null)
-                {
-                    existing.FirstName = newCustomer.FirstName;
-                    existing.Surname = newCustomer.Surname;
-                    existing.PhoneNumber = newCustomer.PhoneNumber;
-                    existing.Address = newCustomer.Address;
-                }
-            }
+            Customers.Clear();
+            foreach (var c in customerService.GetAllCustomers()) Customers.Add(c);
 
             CloseRequested?.Invoke();
+        }
+
+        private void DeleteCustomer()
+        {
+            if (SelectedCustomer == null) return;
+
+            var result = MessageBox.Show("Are you sure you want to delete this customer?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                customerService.DeleteCustomer(SelectedCustomer.Id);
+                Customers.Remove(SelectedCustomer);
+                SelectedCustomer = null;
+                CloseRequested?.Invoke();
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -39,10 +39,11 @@ namespace Assignment2.App.BusinessLayer.Models
 
         public bool CheckIfValid()
         {
-            return !(string.IsNullOrEmpty(Name)
-                || string.IsNullOrEmpty(Type)
-                || string.IsNullOrEmpty(Sex)
-                || OwnerId == 0);
+            return !(string.IsNullOrWhiteSpace(Name)
+                || string.IsNullOrWhiteSpace(Type)
+                || string.IsNullOrWhiteSpace(Sex)
+                || OwnerId <= 0);
+
         }
 
         public override string ToString()

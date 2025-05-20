@@ -23,38 +23,76 @@ namespace Assignment2.App.ViewModels
         private string type = string.Empty;
         private string breed = string.Empty;
         private string sex = string.Empty;
-        private Customer? selectedCustomer;
+        private Animal? selectedAnimal;
+        private int selectedCustomerId;
 
         public string Name { get => name; set { name = value; OnPropertyChanged(); } }
         public string Type { get => type; set { type = value; OnPropertyChanged(); } }
         public string Breed { get => breed; set { breed = value; OnPropertyChanged(); } }
         public string Sex { get => sex; set { sex = value; OnPropertyChanged(); } }
-        public Customer? SelectedCustomer { get => selectedCustomer; set { selectedCustomer = value; OnPropertyChanged(); } }
+
+        public int SelectedCustomerId
+        {
+            get => selectedCustomerId;
+            set
+            {
+                selectedCustomerId = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedCustomer));
+                FilterAnimalsBySelectedCustomer();
+            }
+        }
+
+        public Customer? SelectedCustomer => Customers.FirstOrDefault(c => c.Id == SelectedCustomerId);
+
+        public Animal? SelectedAnimal
+        {
+            get => selectedAnimal;
+            set
+            {
+                selectedAnimal = value;
+                if (value != null)
+                {
+                    Name = value.Name ?? string.Empty;
+                    Type = value.Type ?? string.Empty;
+                    Breed = value.Breed ?? string.Empty;
+                    Sex = value.Sex ?? string.Empty;
+                    SelectedCustomerId = value.OwnerId;
+                }
+                OnPropertyChanged();
+            }
+        }
 
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand DeleteCommand { get; }
+        public ICommand SearchCommand { get; }
         public event Action? CloseRequested;
 
-        public AnimalViewModel(AnimalService animalService, CustomerService customerService, Animal? animal = null)
+        public AnimalViewModel(AnimalService animalService, CustomerService customerService, Customer? customer = null, Animal? animal = null)
         {
             this.animalService = animalService;
             this.customerService = customerService;
             this.originalAnimal = animal;
 
-            Animals = new ObservableCollection<Animal>(animalService.GetAllAnimals());
             Customers = new ObservableCollection<Customer>(customerService.GetAllCustomers());
 
+            // Set customer ID before filtering
+            if (customer != null)
+                SelectedCustomerId = customer.Id;
+
+            // Initialize the animal list properly after customer is selected
+            FilterAnimalsBySelectedCustomer();
+
+            // Select the animal if provided
             if (animal != null)
-            {
-                Name = animal.Name ?? string.Empty;
-                Type = animal.Type ?? string.Empty;
-                Breed = animal.Breed ?? string.Empty;
-                Sex = animal.Sex ?? string.Empty;
-                SelectedCustomer = Customers.FirstOrDefault(c => c.Id == animal.OwnerId);
-            }
+                SelectedAnimal = animal;
 
             SaveCommand = new RelayCommand(SaveAnimal);
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke());
+            DeleteCommand = new RelayCommand(DeleteAnimal, () => SelectedAnimal != null);
+            SearchCommand = new RelayCommand<string>(SearchAnimals);
+            OnPropertyChanged(nameof(IsEditing));
         }
 
         private void SaveAnimal()
@@ -86,8 +124,48 @@ namespace Assignment2.App.ViewModels
             else
                 animalService.UpdateAnimal(newAnimal);
 
+            FilterAnimalsBySelectedCustomer();
             CloseRequested?.Invoke();
+            
         }
+
+        private void DeleteAnimal()
+        {
+            if (SelectedAnimal == null) return;
+
+            var result = MessageBox.Show("Are you sure you want to delete this animal?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                animalService.DeleteAnimal(SelectedAnimal.Id);
+                Animals.Remove(SelectedAnimal);
+                SelectedAnimal = null;
+                CloseRequested?.Invoke();
+            }
+        }
+
+        private void SearchAnimals(string searchTerm)
+        {
+            var filtered = animalService.GetAllAnimals()
+                .Where(a => (a.Name ?? string.Empty).Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            Animals.Clear();
+            foreach (var a in filtered) Animals.Add(a);
+        }
+
+        private void FilterAnimalsBySelectedCustomer()
+        {
+            if (SelectedCustomer == null) return;
+
+            var filtered = animalService.GetAllAnimals()
+                .Where(a => a.OwnerId == SelectedCustomer.Id)
+                .ToList();
+
+            Animals = new ObservableCollection<Animal>(filtered);
+            OnPropertyChanged(nameof(Animals));
+        }
+
+        public bool IsEditing => originalAnimal != null && originalAnimal.Id != 0;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string name = null!)

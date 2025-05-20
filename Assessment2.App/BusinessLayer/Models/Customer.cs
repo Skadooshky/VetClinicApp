@@ -44,7 +44,7 @@ namespace Assignment2.App.BusinessLayer.Models
 
         public override string ToString()
         {
-            return $"{Surname}, {FirstName}".Trim(); ;
+            return $"{Surname}, {FirstName}";
         }
 
         public void WriteToCsv(TextWriter writer)

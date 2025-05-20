@@ -33,9 +33,13 @@ namespace Assignment2.App.BusinessLayer
         public void Add(Animal animal)
         {
             var animals = GetAll();
+
+            animal.Id = animals.Any() ? animals.Max(a => a.Id) + 1 : 1;
+
             animals.Add(animal);
             WriteAll(animals);
         }
+
 
         public void Update(Animal animal)
         {

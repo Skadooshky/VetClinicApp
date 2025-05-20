@@ -1,4 +1,5 @@
 ﻿using Assignment2.App.BusinessLayer;
+using Assignment2.App.BusinessLayer.Models;
 using System.Linq;
 using System.Windows;
 
@@ -9,14 +10,16 @@ namespace Assignment2.App
     /// </summary>
     public partial class AnimalEditorWindow : Window
     {
-        private readonly Store dataStore;
+        private readonly AnimalService animalService;
+        private readonly CustomerService customerService;
         private Animal? animal;
         private Customer? customer;
 
-        public AnimalEditorWindow(Store dataStore)
+        public AnimalEditorWindow(AnimalService animalService, CustomerService customerService)
         {
             InitializeComponent();
-            this.dataStore = dataStore;
+            this.animalService = animalService;
+            this.customerService = customerService;
         }
 
         public Animal? Animal
@@ -33,20 +36,23 @@ namespace Assignment2.App
                 owner.Text = string.Empty;
 
                 if (animal == null) return;
-                customer = dataStore.Customers.FirstOrDefault(c => c.Id == animal.OwnerId);
+                customer = customerService.GetAllCustomers().FirstOrDefault(c => c.Id == animal.OwnerId);
                 owner.Text = customer?.ToString() ?? string.Empty;
             }
         }
 
         private bool AddNewAnimal()
         {
-            var animal = dataStore.AddAnimal();
-            animal.Name = animalName.Text;
-            animal.Type = type.Text;
-            animal.Breed = breed.Text;
-            animal.Sex = sex.Text;
-            animal.OwnerId = customer?.Id ?? 0;
-            if (!animal.CheckIfValid())
+            var newAnimal = new Animal
+            {
+                Name = animalName.Text,
+                Type = type.Text,
+                Breed = breed.Text,
+                Sex = sex.Text,
+                OwnerId = customer?.Id ?? 0
+            };
+
+            if (!newAnimal.CheckIfValid())
             {
                 MessageBox.Show(
                     "Cannot save animal - some information is missing",
@@ -56,8 +62,7 @@ namespace Assignment2.App
                 return false;
             }
 
-            dataStore.Animals.Add(animal);
-            dataStore.Save("data");
+            animalService.AddAnimal(newAnimal);
             return true;
         }
 
@@ -68,7 +73,7 @@ namespace Assignment2.App
 
         private void OnFindCustomer(object sender, RoutedEventArgs e)
         {
-            var window = new SearchForCustomerWindow(dataStore)
+            var window = new SearchForCustomerWindow(customerService)
             {
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -99,6 +104,7 @@ namespace Assignment2.App
             Animal.Breed = breed.Text;
             Animal.Sex = sex.Text;
             Animal.OwnerId = customer?.Id ?? 0;
+
             if (!Animal.CheckIfValid())
             {
                 MessageBox.Show(
@@ -109,7 +115,7 @@ namespace Assignment2.App
                 return false;
             }
 
-            dataStore.Save("data");
+            animalService.UpdateAnimal(Animal);
             return true;
         }
     }

@@ -1,36 +1,50 @@
 ﻿using Assignment2.App.BusinessLayer;
+using Assignment2.App.BusinessLayer.Models;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace Assignment2.App
 {
-    /// <summary>
-    /// Interaction logic for SearchForAnimalWindow.xaml
-    /// </summary>
     public partial class SearchForAnimalWindow : Window
     {
-        private readonly Store dataStore;
-        private Customer? customer;
+        private readonly AnimalService animalService;
 
-        public SearchForAnimalWindow(Store dataStore)
+        public SearchForAnimalWindow(AnimalService animalService)
         {
             InitializeComponent();
-            this.dataStore = dataStore;
+            this.animalService = animalService;
         }
 
         public Animal? Animal { get; private set; }
 
-        public Customer? Customer
+        public Customer? SelectedCustomer
         {
-            get => customer;
+            get => (Customer?)GetValue(SelectedCustomerProperty);
             set
             {
-                customer = value;
-                var animals = dataStore.FindAnimals(customer?.Id ?? 0);
-                foreach (var animal in animals)
-                {
-                    searchResults.Items.Add(new ListBoxItem { Content = animal });
-                }
+                SetValue(SelectedCustomerProperty, value);
+                LoadAnimalsForCustomer();
+            }
+        }
+
+        public static readonly DependencyProperty SelectedCustomerProperty =
+            DependencyProperty.Register("SelectedCustomer", typeof(Customer), typeof(SearchForAnimalWindow), new PropertyMetadata(null));
+
+        private void LoadAnimalsForCustomer()
+        {
+            searchResults.Items.Clear();
+            if (SelectedCustomer == null) return;
+
+            var animals = animalService
+                .GetAllAnimals()
+                .Where(a => a.OwnerId == SelectedCustomer.Id)
+                .ToList();
+
+            foreach (var animal in animals)
+            {
+                searchResults.Items.Add(new ListBoxItem { Content = animal });
             }
         }
 
@@ -43,8 +57,9 @@ namespace Assignment2.App
         private void OnSelect(object sender, RoutedEventArgs e)
         {
             if (searchResults.SelectedItem == null) return;
-            DialogResult = true;
+
             Animal = ((ListBoxItem)searchResults.SelectedItem).Content as Animal;
+            DialogResult = true;
             Close();
         }
     }

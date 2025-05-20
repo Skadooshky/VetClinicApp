@@ -1,4 +1,5 @@
 ﻿using Assignment2.App.BusinessLayer;
+using Assignment2.App.BusinessLayer.Models;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,12 +11,12 @@ namespace Assignment2.App
     /// </summary>
     public partial class SearchForCustomerWindow : Window
     {
-        private readonly Store dataStore;
+        private readonly CustomerService customerService;
 
-        public SearchForCustomerWindow(Store dataStore)
+        public SearchForCustomerWindow(CustomerService customerService)
         {
             InitializeComponent();
-            this.dataStore = dataStore;
+            this.customerService = customerService;
         }
 
         public Customer? Customer { get; set; }
@@ -30,9 +31,15 @@ namespace Assignment2.App
         {
             searchResults.Items.Clear();
             var searchText = searchName.Text;
+
             if (searchText.Length < 3) return;
-            var customers = dataStore.FindCustomers(searchText);
-            foreach (var customer in customers.OrderBy(c => c.Surname).ThenBy(c => c.FirstName))
+
+            var customers = customerService.GetAllCustomers()
+                .Where(c => (c.FirstName + " " + c.Surname).ToLower().Contains(searchText.ToLower()))
+                .OrderBy(c => c.Surname)
+                .ThenBy(c => c.FirstName);
+
+            foreach (var customer in customers)
             {
                 searchResults.Items.Add(new ListBoxItem { Content = customer });
             }
@@ -41,8 +48,9 @@ namespace Assignment2.App
         private void OnSelect(object sender, RoutedEventArgs e)
         {
             if (searchResults.SelectedItem == null) return;
-            DialogResult = true;
+
             Customer = ((ListBoxItem)searchResults.SelectedItem).Content as Customer;
+            DialogResult = true;
             Close();
         }
     }

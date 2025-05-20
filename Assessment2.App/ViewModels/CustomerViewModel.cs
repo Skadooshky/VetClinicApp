@@ -1,5 +1,5 @@
 ﻿using Assignment2.App.BusinessLayer;
-using Models = Assignment2.App.BusinessLayer.Models;
+using Assignment2.App.BusinessLayer.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -11,7 +11,7 @@ namespace Assignment2.App.ViewModels
     {
         private readonly CustomerService customerService;
 
-        public ObservableCollection<Models.Customer> Customers { get; set; }
+        public ObservableCollection<Customer> Customers { get; set; }
 
         private string firstName = string.Empty;
         private string surname = string.Empty;
@@ -47,13 +47,13 @@ namespace Assignment2.App.ViewModels
         public CustomerViewModel(CustomerService service)
         {
             customerService = service;
-            Customers = new ObservableCollection<Models.Customer>(customerService.GetAllCustomers());
+            Customers = new ObservableCollection<Customer>(customerService.GetAllCustomers());
             AddCustomerCommand = new RelayCommand(AddCustomer);
         }
 
         private void AddCustomer()
         {
-            var newCustomer = new Models.Customer
+            var newCustomer = new Customer
             {
                 FirstName = FirstName,
                 Surname = Surname,

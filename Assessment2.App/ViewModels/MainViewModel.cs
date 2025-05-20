@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using Assignment2.App.BusinessLayer;
 using Assignment2.App.Views;
+using Assignment2.App.ViewModels;
 
 namespace Assignment2.App.ViewModels
 {
@@ -21,22 +22,56 @@ namespace Assignment2.App.ViewModels
             customerService = cs;
             animalService = asv;
 
-            AddCustomerCommand = new RelayCommand(() => new CustomerEditorWindow(customerService).ShowDialog());
-            EditCustomerCommand = new RelayCommand(() =>
+            // Add new customer
+            AddCustomerCommand = new RelayCommand(() =>
             {
-                var customerSearch = new SearchForCustomerWindow(customerService) { WindowStartupLocation = WindowStartupLocation.CenterOwner };
-                if (customerSearch.ShowDialog() == true)
-                    new CustomerEditorWindow(customerService) { Customer = customerSearch.Customer }.ShowDialog();
+                var view = new CustomerEditorView(customerService);
+                view.ShowDialog();
             });
 
-            AddAnimalCommand = new RelayCommand(() => new AnimalEditorWindow(animalService, customerService).ShowDialog());
+            // Edit existing customer
+            EditCustomerCommand = new RelayCommand(() =>
+            {
+                var customerSearch = new SearchForCustomerWindow(customerService)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
+                if (customerSearch.ShowDialog() == true)
+                {
+                    var view = new CustomerEditorView(customerService, customerSearch.Customer);
+                    view.ShowDialog();
+                }
+            });
+
+            // Add new animal
+            AddAnimalCommand = new RelayCommand(() =>
+            {
+                var view = new AnimalEditorView(animalService, customerService);
+                view.ShowDialog();
+            });
+
+            // Edit existing animal
             EditAnimalCommand = new RelayCommand(() =>
             {
-                var customerSearch = new SearchForCustomerWindow(customerService) { WindowStartupLocation = WindowStartupLocation.CenterOwner };
+                var customerSearch = new SearchForCustomerWindow(customerService)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
                 if (customerSearch.ShowDialog() != true) return;
-                var animalSearch = new SearchForAnimalWindow(animalService) { SelectedCustomer = customerSearch.Customer };
+
+                var animalSearch = new SearchForAnimalWindow(animalService)
+                {
+                    SelectedCustomer = customerSearch.Customer,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
                 if (animalSearch.ShowDialog() == true)
-                    new AnimalEditorWindow(animalService, customerService) { Animal = animalSearch.Animal }.ShowDialog();
+                {
+                    var view = new AnimalEditorView(animalService, customerService, animalSearch.Animal);
+                    view.ShowDialog();
+                }
             });
 
             ExitCommand = new RelayCommand(() => Application.Current.Shutdown());

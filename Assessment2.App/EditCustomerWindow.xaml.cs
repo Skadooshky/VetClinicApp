@@ -12,11 +12,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Assignment2.App.Views
+namespace Assignment2.App
 {
-    public partial class EditCustomerView: Window
+    /// <summary>
+    /// Interaction logic for EditCustomerWindow.xaml
+    /// </summary>
+    public partial class EditCustomerWindow : Window
     {
-        public EditCustomerView()
+        public EditCustomerWindow()
         {
             InitializeComponent();
         }

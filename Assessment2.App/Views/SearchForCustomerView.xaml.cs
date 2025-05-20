@@ -4,16 +4,13 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Assignment2.App
+namespace Assignment2.App.Views
 {
-    /// <summary>
-    /// Interaction logic for SearchForCustomerWindow.xaml
-    /// </summary>
-    public partial class SearchForCustomerWindow : Window
+    public partial class SearchForCustomerView : Window
     {
         private readonly CustomerService customerService;
 
-        public SearchForCustomerWindow(CustomerService customerService)
+        public SearchForCustomerView(CustomerService customerService)
         {
             InitializeComponent();
             this.customerService = customerService;

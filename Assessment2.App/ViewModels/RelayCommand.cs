@@ -23,4 +23,36 @@ namespace Assignment2.App.ViewModels
         public bool CanExecute(object? parameter) => canExecute?.Invoke() ?? true;
         public void Execute(object? parameter) => execute();
     }
+
+    public class RelayCommand<T> : ICommand
+    {
+        private readonly Action<T> execute;
+        private readonly Predicate<T>? canExecute;
+
+        public RelayCommand(Action<T> execute, Predicate<T>? canExecute = null)
+        {
+            this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            this.canExecute = canExecute;
+        }
+
+        public bool CanExecute(object? parameter)
+        {
+            if (parameter is T value)
+                return canExecute?.Invoke(value) ?? true;
+
+            return canExecute == null;
+        }
+
+        public void Execute(object? parameter)
+        {
+            if (parameter is T value)
+                execute(value);
+        }
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
+        }
+    }
 }

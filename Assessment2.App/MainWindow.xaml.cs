@@ -1,24 +1,29 @@
 ﻿using Assignment2.App.BusinessLayer;
+using Assignment2.App.BusinessLayer.Models;
 using System.Windows;
 
 namespace Assignment2.App
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly Store dataStore = new();
+        private readonly AnimalService animalService;
+        private readonly CustomerService customerService;
 
         public MainWindow()
         {
             InitializeComponent();
-            dataStore.Load("data");
+
+            // Initialize services with their repositories
+            var animalRepo = new CsvAnimalRepository("animals.csv");
+            var customerRepo = new CsvCustomerRepository("customers.csv");
+
+            animalService = new AnimalService(animalRepo);
+            customerService = new CustomerService(customerRepo);
         }
 
         private void EditAnimal(Animal? animal)
         {
-            var window = new AnimalEditorWindow(dataStore)
+            var window = new AnimalEditorWindow(animalService, customerService)
             {
                 Animal = animal,
                 Owner = this,
@@ -29,7 +34,7 @@ namespace Assignment2.App
 
         private void EditCustomer(Customer? customer)
         {
-            var window = new CustomerEditorWindow(dataStore)
+            var window = new CustomerEditorWindow(customerService)
             {
                 Customer = customer,
                 Owner = this,
@@ -50,26 +55,28 @@ namespace Assignment2.App
 
         private void OnEditAnimal(object sender, RoutedEventArgs e)
         {
-            var customerSearch = new SearchForCustomerWindow(dataStore)
+            var customerSearch = new SearchForCustomerWindow(customerService)
             {
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
             };
 
             if (customerSearch.ShowDialog() != true) return;
-            var animalSearch = new SearchForAnimalWindow(dataStore)
+
+            var animalSearch = new SearchForAnimalWindow(animalService)
             {
-                Customer = customerSearch.Customer,
+                SelectedCustomer = customerSearch.Customer,
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
             };
 
-            if (animalSearch.ShowDialog() == true) EditAnimal(animalSearch.Animal);
+            if (animalSearch.ShowDialog() == true)
+                EditAnimal(animalSearch.Animal);
         }
 
         private void OnEditCustomer(object sender, RoutedEventArgs e)
         {
-            var customerSearch = new SearchForCustomerWindow(dataStore)
+            var customerSearch = new SearchForCustomerWindow(customerService)
             {
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,

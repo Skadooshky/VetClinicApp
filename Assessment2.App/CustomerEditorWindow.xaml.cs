@@ -1,4 +1,5 @@
 ﻿using Assignment2.App.BusinessLayer;
+using Assignment2.App.BusinessLayer.Models;
 using System.Windows;
 
 namespace Assignment2.App
@@ -8,13 +9,13 @@ namespace Assignment2.App
     /// </summary>
     public partial class CustomerEditorWindow : Window
     {
-        private readonly Store dataStore;
+        private readonly CustomerService customerService;
         private Customer? customer;
 
-        public CustomerEditorWindow(Store dataStore)
+        public CustomerEditorWindow(CustomerService customerService)
         {
             InitializeComponent();
-            this.dataStore = dataStore;
+            this.customerService = customerService;
         }
 
         public Customer? Customer
@@ -32,12 +33,15 @@ namespace Assignment2.App
 
         private bool AddNewCustomer()
         {
-            var customer = dataStore.AddCustomer();
-            customer.FirstName = firstName.Text;
-            customer.Surname = surname.Text;
-            customer.PhoneNumber = phoneNumber.Text;
-            customer.Address = address.Text;
-            if (!customer.CheckIfValid())
+            var newCustomer = new Customer
+            {
+                FirstName = firstName.Text,
+                Surname = surname.Text,
+                PhoneNumber = phoneNumber.Text,
+                Address = address.Text
+            };
+
+            if (!newCustomer.CheckIfValid())
             {
                 MessageBox.Show(
                     "Cannot save customer - some information is missing",
@@ -47,8 +51,7 @@ namespace Assignment2.App
                 return false;
             }
 
-            dataStore.Customers.Add(customer);
-            dataStore.Save("data");
+            customerService.AddCustomer(newCustomer);
             return true;
         }
 
@@ -75,6 +78,7 @@ namespace Assignment2.App
             Customer.Surname = surname.Text;
             Customer.PhoneNumber = phoneNumber.Text;
             Customer.Address = address.Text;
+
             if (!Customer.CheckIfValid())
             {
                 MessageBox.Show(
@@ -85,7 +89,7 @@ namespace Assignment2.App
                 return false;
             }
 
-            dataStore.Save("data");
+            customerService.UpdateCustomer(Customer);
             return true;
         }
     }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Assignment2.App\Assignment2.App.csproj" />
+    <ProjectReference Include="..\Assessment2.App\Assignment2.App.csproj" />
   </ItemGroup>
 
 </Project>

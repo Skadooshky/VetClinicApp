@@ -83,4 +83,4 @@ This project is intended as an assessment/coursework project. It focuses on appl
 
 ## Author
 
-Shivarn Davidson
+Skadooshky
